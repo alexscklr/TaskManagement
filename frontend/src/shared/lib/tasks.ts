@@ -1,4 +1,4 @@
-import api from "../../api/axiosInstance";
+import api from "@/api/axiosInstance";
 import type { TaskCreateDto, TaskReadDto, TaskUpdateDto } from "../types/task";
 
 export async function fetchTasks(workspaceId: number) {

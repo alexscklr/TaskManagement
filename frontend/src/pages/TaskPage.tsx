@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import TaskCreationForm from "../shared/components/Tasks/TaskCreationForm";
 import TaskEditDialog from "../shared/components/Tasks/TaskEditDialog";
 import TaskElement from "../shared/components/Tasks/TaskElement";
-import { updateTask, createTask, deleteTask, fetchTasks } from "../shared/lib/tasks";
-import type { TaskReadDto } from "../shared/types/task";
+import type { TaskCreateDto, TaskReadDto, TaskUpdateDto } from "../shared/types/task";
+import { useTasks } from "@/shared/hooks/useTasks";
 
 
 interface TaskPageProps {
@@ -11,30 +11,47 @@ interface TaskPageProps {
 }
 
 export default function TaskPage(props: TaskPageProps) {
-    const [tasks, setTasks] = useState<TaskReadDto[]>([]);
+    //const [tasks, setTasks] = useState<TaskReadDto[]>([]);
     const [editingTask, setEditingTask] = useState<TaskReadDto | null>(null);
     const [messageLocal, setMessageLocal] = useState("");
 
-    useEffect(() => {
-        const fetchData = async () => {
-             // Pass workspaceId to fetch
-            const tasks = await fetchTasks(props.workspaceId);
-            setTasks(tasks);
-        };
-        
-        fetchData();
-    }, [props.workspaceId]);
+    const { tasks, loadTasks, deleteTask, createTask, updateTask } = useTasks();
 
+    useEffect(() => {
+        loadTasks(props.workspaceId);
+    }, [props.workspaceId, loadTasks]);
+
+
+    const handleCreateTask = async (task: TaskCreateDto) => {
+        try {
+            await createTask(task);
+            setMessageLocal(`Task "${task.title}" has been created successfully!`);
+
+        } catch (error) {
+            console.error(error);
+            setMessageLocal(error instanceof Error ? error.message : "Failed to create task.");
+        }
+    }
 
     const handleDeleteTask = async (taskId: number) => {
         try {
             await deleteTask(taskId);
-            setTasks(tasks.filter(t => t.id !== taskId));
             setEditingTask(null);
             setMessageLocal(`Task has been deleted successfully!`);
         } catch (error) {
             console.error(error);
-            setMessageLocal("Failed to delete task.");
+            setMessageLocal(error instanceof Error ? error.message : "Failed to delete task.");
+        }
+    }
+
+    const handleUpdateTask = async (updatedTask: TaskUpdateDto, taskId: number) => {
+        try {
+            await updateTask(updatedTask, taskId);
+            setEditingTask(null);
+            setMessageLocal(`Task "${updatedTask.title}" has been updated successfully!`);
+        } catch (error) {
+            console.error(error);
+            setMessageLocal(error instanceof Error ? error.message : "Failed to update task.");
         }
     }
 
@@ -66,17 +83,7 @@ export default function TaskPage(props: TaskPageProps) {
                     taskId={editingTask?.id}
                     workspaceId={props.workspaceId}
                     onClose={() => setEditingTask(null)}
-                    onSubmit={async (updatedTask) => {
-                        if (!editingTask) return;
-                        try {
-                            const fullUpdatedTask = await updateTask(updatedTask, editingTask.id);
-                            setTasks(tasks.map(t => t.id === fullUpdatedTask.id ? fullUpdatedTask : t));
-                            setEditingTask(null);
-                            setMessageLocal(`Task "${fullUpdatedTask.title}" aktualisiert!`);
-                        } catch (error: unknown) {
-                            setMessageLocal(error instanceof Error ? error.message : "Fehler beim Update");
-                        }
-                    }}
+                    onSubmit={handleUpdateTask}
                     onDelete={handleDeleteTask}
                 />
             }
@@ -84,21 +91,9 @@ export default function TaskPage(props: TaskPageProps) {
             <hr className="my-6 border-gray-300" />
             <div className="mt-8">
                 <h2 className="text-lg font-bold text-purple-600 mb-2">Create New Task</h2>
-                <TaskCreationForm 
+                <TaskCreationForm
                     workspaceId={props.workspaceId}
-                    onSubmit={async (task) => {
-                    try {
-                        const createdTask = await createTask({ ...task, workspaceId: props.workspaceId });
-                        setTasks(prevTasks => [...prevTasks, createdTask]);
-                        setMessageLocal(`Task "${createdTask.title}" has been created successfully!`);
-                    } catch (error: unknown) {
-                        if (error instanceof Error) {
-                            setMessageLocal(error.message || "Failed to create task.");
-                        } else {
-                            setMessageLocal("An unknown error occurred.");
-                        }
-                    }
-                }} />
+                    onSubmit={handleCreateTask} />
             </div>
         </div>
     );

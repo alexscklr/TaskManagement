@@ -553,11 +553,13 @@ frontend/.env*
 # 2. Backend Secrets & Build
 backend/bin/
 backend/obj/
-backend/appsettings.Development.json
-backend/appsettings.Local.json
+backend/appsettings.[Dd]evelopment.json
+backend/appsettings.[Ll]ocal.json
 backend/publish/
 *.db
 *.db-journal
+
+UserSecretsId
 
 # 3. General Editor Fixes
 .vscode/

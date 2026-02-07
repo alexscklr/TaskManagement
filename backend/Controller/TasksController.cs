@@ -1,6 +1,6 @@
 using backend.DTOs;
-using backend.Interfaces;
 using backend.Models;
+using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controller;
@@ -17,7 +17,9 @@ public class TasksController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TodoTaskReadDto>>> GetTasks([FromQuery] int workspaceId)
+    public async Task<ActionResult<IEnumerable<TodoTaskReadDto>>> GetTasks(
+        [FromQuery] int workspaceId
+    )
     {
         var tasks = await _taskService.GetAllTasksAsync(workspaceId);
         return Ok(tasks);

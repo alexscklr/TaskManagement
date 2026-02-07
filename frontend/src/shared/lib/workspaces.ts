@@ -1,4 +1,4 @@
-import api from "../../api/axiosInstance";
+import api from "@/api/axiosInstance";
 import type { WorkspaceCreateDto, WorkspaceReadDto, WorkspaceUpdateDto } from "../types/workspace";
 
 export async function fetchWorkspaces() {

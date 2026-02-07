@@ -1,4 +1,4 @@
-import api from "../../api/axiosInstance";
+import api from "@/api/axiosInstance";
 import type { CategoryCreateDto, CategoryReadDto, CategoryUpdateDto } from "../types/category";
 
 export async function fetchCategories(workspaceId: number) {
