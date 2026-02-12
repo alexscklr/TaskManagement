@@ -9,6 +9,7 @@ import Header from './layout/Header';
 import SignUpPage from './pages/SignUpPage';
 import LoginPage from './pages/LoginPage';
 import { useAuthContext } from './features/auth/context/AuthContext';
+import InvitationPage from './pages/InvitationPage';
 
 function App() {
   const { user } = useAuthContext();
@@ -18,14 +19,17 @@ function App() {
     <>
       <BrowserRouter>
         <Header />
+        <Main>
+          <Routes>
 
-        <Routes>
-          <Route path="/" element={user ? <Main><WorkspacePage /><UserPage /></Main> : <Main><LoginPage /></Main>} />
-          <Route path="/signup" element={<Main><SignUpPage /></Main>} />
-          <Route path="/login" element={<Main><LoginPage /></Main>} />
-          <Route path="/workspace/:workspaceId" element={<Main><WorkspaceDetailsPage /></Main>} />
+            <Route path="/" element={user ? <><WorkspacePage /><UserPage /></> : <LoginPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/workspace/:workspaceId" element={<WorkspaceDetailsPage />} />
+            <Route path="/invitations" element={<InvitationPage />} />
 
-        </Routes>
+          </Routes>
+        </Main>
       </BrowserRouter>
     </>
   )

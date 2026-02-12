@@ -12,5 +12,5 @@ public class AppDbContext : DbContext
     public DbSet<Category> Categories { get; set; }
     public DbSet<Workspace> Workspaces { get; set; }
     public DbSet<User> Users { get; set; }
-    //public DbSet<WorkspaceMembership> Memberships { get; set; }
+    public DbSet<WorkspaceMembership> WorkspaceMemberships { get; set; }
 }

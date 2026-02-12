@@ -1,31 +1,42 @@
-import { useCallback, useState } from "react";
-import type { TaskCreateDto, TaskReadDto, TaskUpdateDto } from "../types/task";
-import { createTask as createTaskApi, fetchTasks, updateTask as updateTaskApi, deleteTask as deleteTaskApi } from "../lib/tasks";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { TaskReadDto, TaskUpdateDto } from '../types/task';
+import { createTask, fetchTasks, updateTask, deleteTask } from '../lib/tasks';
 
+export function useTasksQuery(workspaceId: number) {
+    return useQuery<TaskReadDto[]>({
+        queryKey: ['tasks', workspaceId],
+        queryFn: () => fetchTasks(workspaceId),
+        enabled: !!workspaceId,
+    });
+}
 
+export function useCreateTaskMutation(workspaceId: number) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: createTask,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['tasks', workspaceId] });
+        },
+    });
+}
 
-export function useTasks() {
-    const [tasks, setTasks] = useState<TaskReadDto[]>([]);
+export function useUpdateTaskMutation(workspaceId: number) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ updatedTask, taskId }: { updatedTask: TaskUpdateDto; taskId: number }) =>
+            updateTask(updatedTask, taskId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['tasks', workspaceId] });
+        },
+    });
+}
 
-    const loadTasks = useCallback(async (workspaceId: number) => {
-        const fetchedTasks = await fetchTasks(workspaceId);
-        setTasks(fetchedTasks);
-    }, []);
-
-    const createTask = useCallback(async (task: TaskCreateDto) => {
-        const createdTask: TaskReadDto = await createTaskApi(task);
-        setTasks(prevTasks => [...prevTasks, createdTask]);
-    }, []);
-
-    const updateTask = useCallback(async (updatedTask: TaskUpdateDto, taskId: number) => {
-        const utask: TaskReadDto = await updateTaskApi(updatedTask, taskId);
-        setTasks(prevTasks => prevTasks.map(task => task.id === taskId ? utask : task));
-    }, []);
-
-    const deleteTask = useCallback(async (taskId: number) => {
-        await deleteTaskApi(taskId);
-        setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
-    }, []);
-    
-    return {tasks, loadTasks, createTask, updateTask, deleteTask};
+export function useDeleteTaskMutation(workspaceId: number) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (taskId: number) => deleteTask(taskId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['tasks', workspaceId] });
+        },
+    });
 }

@@ -1,31 +1,41 @@
-import { useCallback, useState } from "react";
-import type { WorkspaceCreateDto, WorkspaceReadDto, WorkspaceUpdateDto } from "../types/workspace";
-import { createWorkspace as createWorkspacesApi, fetchWorkspaces, updateWorkspace as updateWorkspacesApi, deleteWorkspace as deleteWorkspacesApi } from "../lib/workspaces";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { WorkspaceReadDto, WorkspaceUpdateDto } from '../types/workspace';
+import { createWorkspace, fetchWorkspaces, updateWorkspace, deleteWorkspace } from '../lib/workspaces';
 
+export function useWorkspacesQuery() {
+    return useQuery<WorkspaceReadDto[]>({
+        queryKey: ['workspaces'],
+        queryFn: fetchWorkspaces,
+    });
+}
 
+export function useCreateWorkspaceMutation() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: createWorkspace,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+        },
+    });
+}
 
-export function useWorkspaces() {
-    const [workspaces, setWorkspaces] = useState<WorkspaceReadDto[]>([]);
+export function useUpdateWorkspaceMutation() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ updatedWorkspace, workspaceId }: { updatedWorkspace: WorkspaceUpdateDto; workspaceId: number }) =>
+            updateWorkspace(updatedWorkspace, workspaceId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+        },
+    });
+}
 
-    const loadWorkspaces = useCallback(async () => {
-        const fetchedWorkspaces = await fetchWorkspaces();
-        setWorkspaces(fetchedWorkspaces);
-    }, []);
-
-    const createWorkspace = useCallback(async (workspace: WorkspaceCreateDto) => {
-        const createdWorkspace: WorkspaceReadDto = await createWorkspacesApi(workspace);
-        setWorkspaces(prevWorkspaces => [...prevWorkspaces, createdWorkspace]);
-    }, []);
-
-    const updateWorkspace = useCallback(async (updatedWorkspace: WorkspaceUpdateDto, workspaceId: number) => {
-        const uworkspace: WorkspaceReadDto = await updateWorkspacesApi(updatedWorkspace, workspaceId);
-        setWorkspaces(prevWorkspaces => prevWorkspaces.map(workspace => workspace.id === workspaceId ? uworkspace : workspace));
-    }, []);
-
-    const deleteWorkspace = useCallback(async (workspaceId: number) => {
-        await deleteWorkspacesApi(workspaceId);
-        setWorkspaces(prevWorkspaces => prevWorkspaces.filter(workspace => workspace.id !== workspaceId));
-    }, []);
-    
-    return {workspaces, loadWorkspaces, createWorkspace, updateWorkspace, deleteWorkspace};
+export function useDeleteWorkspaceMutation() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (workspaceId: number) => deleteWorkspace(workspaceId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+        },
+    });
 }

@@ -12,4 +12,6 @@ public class Workspace
 
     public ICollection<Category> Categories { get; set; } = new List<Category>();
     public ICollection<TodoTask> Tasks { get; set; } = new List<TodoTask>();
+    public ICollection<WorkspaceMembership> WorkspaceMemberships { get; set; } =
+        new List<WorkspaceMembership>();
 }

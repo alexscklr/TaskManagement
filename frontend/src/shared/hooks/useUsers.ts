@@ -1,31 +1,41 @@
-import { useCallback, useState } from "react";
-import type { UserCreateDto, UserReadDto, UserUpdateDto } from "../types/user";
-import { createUser as createUserApi, fetchUsers, updateUser as updateUserApi, deleteUser as deleteUserApi } from "../lib/users";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { UserReadDto, UserUpdateDto } from '../types/user';
+import { createUser, fetchUsers, updateUser, deleteUser } from '../lib/users';
 
+export function useUsersQuery() {
+    return useQuery<UserReadDto[]>({
+        queryKey: ['users'],
+        queryFn: fetchUsers,
+    });
+}
 
+export function useCreateUserMutation() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: createUser,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+        },
+    });
+}
 
-export function useUsers() {
-    const [users, setUsers] = useState<UserReadDto[]>([]);
+export function useUpdateUserMutation() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ updatedUser, userId }: { updatedUser: UserUpdateDto; userId: number }) =>
+            updateUser(updatedUser, userId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+        },
+    });
+}
 
-    const loadUsers = useCallback(async () => {
-        const fetchedUsers = await fetchUsers();
-        setUsers(fetchedUsers);
-    }, []);
-
-    const createUser = useCallback(async (user: UserCreateDto) => {
-        const createdUser: UserReadDto = await createUserApi(user);
-        setUsers(prevUsers => [...prevUsers, createdUser]);
-    }, []);
-
-    const updateUser = useCallback(async (updatedUser: UserUpdateDto, userId: number) => {
-        const updatedUserData: UserReadDto = await updateUserApi(updatedUser, userId);
-        setUsers(prevUsers => prevUsers.map(user => user.id === userId ? updatedUserData : user));
-    }, []);
-
-    const deleteUser = useCallback(async (userId: number) => {
-        await deleteUserApi(userId);
-        setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-    }, []);
-    
-    return {users, loadUsers, createUser, updateUser, deleteUser};
+export function useDeleteUserMutation() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (userId: number) => deleteUser(userId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+        },
+    });
 }

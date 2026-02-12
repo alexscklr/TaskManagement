@@ -47,5 +47,15 @@ public class MappingProfile : Profile
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
         CreateMap<User, UserReadDto>();
+
+        // --- WorkspaceMembership Mappings ---
+        CreateMap<WorkspaceMembershipCreateDto, WorkspaceMembership>(MemberList.Source);
+
+        CreateMap<WorkspaceMembershipUpdateDto, WorkspaceMembership>(MemberList.Source)
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+        CreateMap<WorkspaceMembership, WorkspaceMembershipInvitationReadDto>()
+            .ForMember(dest => dest.Workspace, opt => opt.MapFrom(src => src.Workspace));
+
+        CreateMap<WorkspaceMembership, WorkspaceMembershipReadDto>();
     }
 }

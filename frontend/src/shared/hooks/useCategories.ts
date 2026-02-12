@@ -1,31 +1,42 @@
-import { useCallback, useState } from "react";
-import type { CategoryCreateDto, CategoryReadDto, CategoryUpdateDto } from "../types/category";
-import { fetchCategories, createCategory as createCategoryApi, updateCategory as updateCategoryApi, deleteCategory as deleteCategoryApi } from "../lib/categories";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { CategoryReadDto, CategoryUpdateDto } from '../types/category';
+import { fetchCategories, createCategory, updateCategory, deleteCategory } from '../lib/categories';
 
+export function useCategoriesQuery(workspaceId: number) {
+    return useQuery<CategoryReadDto[]>({
+        queryKey: ['categories', workspaceId],
+        queryFn: () => fetchCategories(workspaceId),
+        enabled: !!workspaceId,
+    });
+}
 
+export function useCreateCategoryMutation(workspaceId: number) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: createCategory,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['categories', workspaceId] });
+        },
+    });
+}
 
-export function useCategories() {
-    const [categories, setCategories] = useState<CategoryReadDto[]>([]);
+export function useUpdateCategoryMutation(workspaceId: number) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ updatedCategory, categoryId }: { updatedCategory: CategoryUpdateDto; categoryId: number }) =>
+            updateCategory(updatedCategory, categoryId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['categories', workspaceId] });
+        },
+    });
+}
 
-    const loadCategories = useCallback(async (workspaceId: number) => {
-        const fetchedCategories = await fetchCategories(workspaceId);
-        setCategories(fetchedCategories);
-    }, []);
-
-    const createCategory = useCallback(async (category: CategoryCreateDto) => {
-        const createdCategory: CategoryReadDto = await createCategoryApi(category);
-        setCategories(prevCategories => [...prevCategories, createdCategory]);
-    }, []);
-
-    const updateCategory = useCallback(async (updatedCategory: CategoryUpdateDto, categoryId: number) => {
-        const updatedCat: CategoryReadDto = await updateCategoryApi(updatedCategory, categoryId);
-        setCategories(prevCategories => prevCategories.map(category => category.id === categoryId ? updatedCat : category));
-    }, []);
-
-    const deleteCategory = useCallback(async (categoryId: number) => {
-        await deleteCategoryApi(categoryId);
-        setCategories(prevCategories => prevCategories.filter(category => category.id !== categoryId));
-    }, []);
-    
-    return {categories, loadCategories, createCategory, updateCategory, deleteCategory};
+export function useDeleteCategoryMutation(workspaceId: number) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (categoryId: number) => deleteCategory(categoryId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['categories', workspaceId] });
+        },
+    });
 }
