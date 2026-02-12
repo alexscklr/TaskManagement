@@ -13,4 +13,14 @@ public class AppDbContext : DbContext
     public DbSet<Workspace> Workspaces { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<WorkspaceMembership> WorkspaceMemberships { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+        modelBuilder.ApplyConfiguration(new TaskConfiguration());
+        modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfiguration(new WorkspaceConfiguration());
+        modelBuilder.ApplyConfiguration(new WorkspaceMembershipConfiguration());
+    }
 }

@@ -7,7 +7,7 @@ public interface IWorkspaceService
 {
     Task<IEnumerable<WorkspaceReadDto>> GetAllWorkspacesAsync();
     Task<WorkspaceReadDto?> GetWorkspaceByIdAsync(int id);
-    Task<WorkspaceReadDto> CreateWorkspaceAsync(WorkspaceCreateDto workspaceDto);
+    Task<WorkspaceReadDto> CreateWorkspaceAsync(WorkspaceCreateDto workspaceDto, int creatorUserId);
     Task<bool> DeleteWorkspaceAsync(int id);
     Task<WorkspaceReadDto> UpdateWorkspaceAsync(int id, WorkspaceUpdateDto workspaceDto);
 }

@@ -1,5 +1,6 @@
 using AutoMapper;
 using backend.Data;
+using backend.DTOs;
 using backend.Models;
 using backend.Services;
 using FluentAssertions;
@@ -10,14 +11,18 @@ namespace backend.Tests.Services;
 
 public class WorkspaceServiceTests
 {
-    private readonly Mock<IMapper> _mockMapper;
+    private readonly IMapper _mapper;
     private readonly AppDbContext _context;
     private readonly WorkspaceService _service;
 
     public WorkspaceServiceTests()
     {
-        // 1. Mapper Mock erstellen
-        _mockMapper = new Mock<IMapper>();
+        // 1. Echten Mapper konfigurieren
+        var config = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile<backend.Profiles.MappingProfile>();
+        });
+        _mapper = config.CreateMapper();
 
         // 2. Context vorbereiten (In-Memory)
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -29,8 +34,7 @@ public class WorkspaceServiceTests
         _context.Database.EnsureCreated();
 
         // 3. Service erstellen
-        // Da _context kein Mock ist, übergeben wir ihn direkt ohne .Object
-        _service = new WorkspaceService(_context, _mockMapper.Object);
+        _service = new WorkspaceService(_context, _mapper);
     }
 
     [Fact]
@@ -58,5 +62,41 @@ public class WorkspaceServiceTests
 
         //Assert
         await act.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
+    [Fact]
+    public async Task CreateWorkspaceAsync_ShouldCreateWorkspaceAndMembership()
+    {
+        // Arrange
+        var workspaceDto = new WorkspaceCreateDto { Name = "New Workspace" };
+
+        var creatorUser = new UserCreateDto
+        {
+            Email = "creator@example.com",
+            Password = "password",
+            Username = "creator",
+        };
+        var creatorUserEntity = new User
+        {
+            Id = 1,
+            Email = creatorUser.Email,
+            Username = creatorUser.Username,
+            PasswordHash = "hashedpassword",
+        };
+
+        // Act
+        var result = await _service.CreateWorkspaceAsync(workspaceDto, creatorUserEntity.Id);
+
+        // Assert
+        var createdWorkspace = await _context.Workspaces.FindAsync(result.Id);
+        createdWorkspace.Should().NotBeNull();
+        createdWorkspace!.Name.Should().Be(workspaceDto.Name);
+
+        var membershipInDb = await _context.WorkspaceMemberships.FirstOrDefaultAsync(m =>
+            m.UserId == 1 && m.WorkspaceId == createdWorkspace.Id
+        );
+
+        membershipInDb.Should().NotBeNull();
+        membershipInDb!.Role.Should().Be(WorkspaceRole.Owner);
     }
 }

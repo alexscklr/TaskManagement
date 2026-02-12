@@ -558,6 +558,8 @@ backend/appsettings.[Ll]ocal.json
 backend/publish/
 *.db
 *.db-journal
+*.db-shm
+*.db-wal
 
 UserSecretsId
 

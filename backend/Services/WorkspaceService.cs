@@ -32,11 +32,26 @@ public class WorkspaceService : IWorkspaceService
         return _mapper.Map<WorkspaceReadDto>(workspace);
     }
 
-    public async Task<WorkspaceReadDto> CreateWorkspaceAsync(WorkspaceCreateDto workspaceDto)
+    public async Task<WorkspaceReadDto> CreateWorkspaceAsync(
+        WorkspaceCreateDto workspaceDto,
+        int creatorUserId
+    )
     {
         var workspace = _mapper.Map<Workspace>(workspaceDto);
         _context.Workspaces.Add(workspace);
         await _context.SaveChangesAsync();
+
+        var membership = new WorkspaceMembership
+        {
+            UserId = creatorUserId,
+            WorkspaceId = workspace.Id,
+            Role = WorkspaceRole.Owner,
+            JoinedAt = DateTime.UtcNow,
+        };
+
+        _context.WorkspaceMemberships.Add(membership);
+        await _context.SaveChangesAsync();
+
         return _mapper.Map<WorkspaceReadDto>(workspace);
     }
 

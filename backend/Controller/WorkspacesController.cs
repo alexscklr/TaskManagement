@@ -1,6 +1,7 @@
 using backend.DTOs;
 using backend.Models;
 using backend.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controller;
@@ -42,12 +43,25 @@ public class WorkspacesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<Workspace>> CreateWorkspace(WorkspaceCreateDto workspaceDto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var createdWorkspace = await _workspaceService.CreateWorkspaceAsync(workspaceDto);
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null)
+        {
+            return Unauthorized("User-ID konnte nicht aus dem Token gelesen werden.");
+        }
+
+        int currentUserId = int.Parse(userIdClaim.Value);
+
+        var createdWorkspace = await _workspaceService.CreateWorkspaceAsync(
+            workspaceDto,
+            currentUserId
+        );
         return CreatedAtAction(
             nameof(GetWorkspaces),
             new { id = createdWorkspace.Id },

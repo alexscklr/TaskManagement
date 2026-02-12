@@ -9,18 +9,25 @@ using Moq;
 
 public class WorkspaceMembershipServiceTests
 {
-    private readonly Mock<IMapper> _mockMapper;
+    private readonly IMapper _mapper;
     private readonly AppDbContext _context;
     private readonly IWorkspaceMembershipService _service;
 
     public WorkspaceMembershipServiceTests()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: "TestDatabase")
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
         _context = new AppDbContext(options);
-        _mockMapper = new Mock<IMapper>();
-        _service = new WorkspaceMembershipService(_context, _mockMapper.Object);
+
+        // Echten Mapper konfigurieren
+        var config = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile<backend.Profiles.MappingProfile>();
+        });
+        _mapper = config.CreateMapper();
+
+        _service = new WorkspaceMembershipService(_context, _mapper);
     }
 
     [Fact]
