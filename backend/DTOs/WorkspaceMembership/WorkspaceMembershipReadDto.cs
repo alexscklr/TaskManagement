@@ -9,4 +9,6 @@ public class WorkspaceMembershipReadDto
     public int UserId { get; set; }
     public int WorkspaceId { get; set; }
     public WorkspaceRole Role { get; set; } = WorkspaceRole.Member;
+    public DateTime? JoinedAt { get; set; }
+    public UserReadDto User { get; set; } = new UserReadDto();
 }

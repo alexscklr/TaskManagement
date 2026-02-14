@@ -1,6 +1,7 @@
 using backend.DTOs;
 using backend.Models;
 using backend.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controller;
@@ -17,6 +18,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<UserReadDto>>> GetUsers()
     {
         var users = await _userService.GetAllUsersAsync();
@@ -24,6 +26,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<ActionResult<UserReadDto>> GetUserById(int id)
     {
         var user = await _userService.GetUserByIdAsync(id);
@@ -33,6 +36,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteUser(int id)
     {
         var success = await _userService.DeleteUserAsync(id);
@@ -42,6 +46,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<UserReadDto>> CreateUser(UserCreateDto userDto)
     {
         if (!ModelState.IsValid)
@@ -52,6 +57,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<ActionResult<UserReadDto>> UpdateUser(int id, UserUpdateDto userDto)
     {
         var user = await _userService.GetUserByIdAsync(id);

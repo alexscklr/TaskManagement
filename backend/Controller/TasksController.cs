@@ -1,6 +1,7 @@
 using backend.DTOs;
 using backend.Models;
 using backend.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controller;
@@ -17,6 +18,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<TodoTaskReadDto>>> GetTasks(
         [FromQuery] int workspaceId
     )
@@ -26,6 +28,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<ActionResult<TodoTask>> GetTaskById(int id)
     {
         var task = await _taskService.GetTaskByIdAsync(id);
@@ -35,6 +38,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteTask(int id)
     {
         var success = await _taskService.DeleteTaskAsync(id);
@@ -44,6 +48,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<TodoTask>> CreateTask(TaskCreateDto taskDto)
     {
         if (!ModelState.IsValid)
@@ -54,6 +59,7 @@ public class TasksController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<ActionResult<TodoTask>> UpdateTask(int id, TaskUpdateDto taskDto)
     {
         var task = await _taskService.GetTaskByIdAsync(id);

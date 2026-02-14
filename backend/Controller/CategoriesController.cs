@@ -1,6 +1,7 @@
 using backend.DTOs;
 using backend.Models;
 using backend.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controller;
@@ -17,6 +18,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<CategoryReadDto>>> GetCategories(
         [FromQuery] int workspaceId
     )
@@ -26,6 +28,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<ActionResult<CategoryReadDto>> GetCategoryById(int id)
     {
         var category = await _categoryService.GetCategoryByIdAsync(id);
@@ -35,6 +38,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteCategory(int id)
     {
         var success = await _categoryService.DeleteCategoryAsync(id);
@@ -44,6 +48,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<CategoryReadDto>> CreateCategory(CategoryCreateDto categoryDto)
     {
         if (!ModelState.IsValid)
@@ -58,6 +63,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<ActionResult<CategoryReadDto>> UpdateCategory(
         int id,
         CategoryUpdateDto categoryDto

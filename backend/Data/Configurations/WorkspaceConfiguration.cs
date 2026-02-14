@@ -9,7 +9,6 @@ public class WorkspaceConfiguration : IEntityTypeConfiguration<Workspace>
         builder.HasKey(w => w.Id);
         builder.Property(w => w.Name).IsRequired();
 
-        // Beziehung: Workspace -> Memberships
         builder
             .HasMany(w => w.WorkspaceMemberships)
             .WithOne(m => m.Workspace)

@@ -18,13 +18,16 @@ public class WorkspacesController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<Workspace>>> GetWorkspaces()
     {
-        var workspaces = await _workspaceService.GetAllWorkspacesAsync();
+        var userId = User.GetUserId();
+        var workspaces = await _workspaceService.GetAllWorkspacesForUserAsync(userId);
         return Ok(workspaces);
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<ActionResult<Workspace>> GetWorkspaceById(int id)
     {
         var workspace = await _workspaceService.GetWorkspaceByIdAsync(id);
@@ -34,6 +37,7 @@ public class WorkspacesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteWorkspace(int id)
     {
         var success = await _workspaceService.DeleteWorkspaceAsync(id);
@@ -46,22 +50,9 @@ public class WorkspacesController : ControllerBase
     [Authorize]
     public async Task<ActionResult<Workspace>> CreateWorkspace(WorkspaceCreateDto workspaceDto)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        var userId = User.GetUserId();
 
-        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-
-        if (userIdClaim == null)
-        {
-            return Unauthorized("User-ID konnte nicht aus dem Token gelesen werden.");
-        }
-
-        int currentUserId = int.Parse(userIdClaim.Value);
-
-        var createdWorkspace = await _workspaceService.CreateWorkspaceAsync(
-            workspaceDto,
-            currentUserId
-        );
+        var createdWorkspace = await _workspaceService.CreateWorkspaceAsync(workspaceDto, userId);
         return CreatedAtAction(
             nameof(GetWorkspaces),
             new { id = createdWorkspace.Id },
@@ -70,6 +61,7 @@ public class WorkspacesController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = "WorkspaceMember")]
     public async Task<ActionResult<Workspace>> UpdateWorkspace(
         int id,
         WorkspaceUpdateDto workspaceDto

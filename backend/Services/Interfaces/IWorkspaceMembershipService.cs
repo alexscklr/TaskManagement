@@ -19,7 +19,7 @@ public interface IWorkspaceMembershipService
         WorkspaceMembershipUpdateDto membershipDto
     );
 
-    Task<IEnumerable<UserReadDto>> GetUsersInWorkspaceAsync(int workspaceId);
+    Task<IEnumerable<WorkspaceMembershipReadDto>> GetUsersInWorkspaceAsync(int workspaceId);
     Task<IEnumerable<WorkspaceReadDto>> GetWorkspacesForUserAsync(int userId);
 
     Task<WorkspaceMembershipReadDto?> GetMembershipAsync(int userId, int workspaceId);

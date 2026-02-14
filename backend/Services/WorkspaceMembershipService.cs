@@ -120,17 +120,16 @@ public class WorkspaceMembershipService : IWorkspaceMembershipService
         return _mapper.Map<WorkspaceMembershipReadDto>(membership);
     }
 
-    public async Task<IEnumerable<UserReadDto>> GetUsersInWorkspaceAsync(int workspaceId)
+    public async Task<IEnumerable<WorkspaceMembershipReadDto>> GetUsersInWorkspaceAsync(
+        int workspaceId
+    )
     {
         var memberships = await _context
-            .WorkspaceMemberships.Where(m => m.WorkspaceId == workspaceId && m.JoinedAt != null)
+            .WorkspaceMemberships.Where(m => m.WorkspaceId == workspaceId)
             .Include(m => m.User)
             .ToListAsync();
 
-        var users = memberships.Select(m => m.User).ToList();
-        var userDtos = _mapper.Map<List<UserReadDto>>(users);
-
-        return userDtos;
+        return _mapper.Map<IEnumerable<WorkspaceMembershipReadDto>>(memberships);
     }
 
     public async Task<IEnumerable<WorkspaceReadDto>> GetWorkspacesForUserAsync(int userId)

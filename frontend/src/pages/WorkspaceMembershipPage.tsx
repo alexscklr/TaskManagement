@@ -1,5 +1,5 @@
 import { defaultWorkspaceInvite } from "@/shared/constants/workspaces";
-import { useInviteUserMutation, useUsersInWorkspaceQuery } from "@/shared/hooks/useWorkspaceMemberships";
+import { useInviteUserMutation, useRemoveUserMutation, useUpdateUserRoleMutation, useUsersInWorkspaceQuery } from "@/shared/hooks/useWorkspaceMemberships";
 import type { WorkspaceMembershipInviteDto } from "@/shared/types/workspacemembership";
 import { useState } from "react";
 
@@ -12,6 +12,8 @@ export default function WorkspaceMembershipPage(props: WorkspaceMembershipPagePr
 
     const { data: memberships, isLoading, isError, error } = useUsersInWorkspaceQuery(props.workspaceId);
     const { mutate: inviteUser, isPending: isInviting, isError: isInviteError, error: inviteError } = useInviteUserMutation(props.workspaceId);
+    const { mutate: removeUser } = useRemoveUserMutation(props.workspaceId);
+    const { mutate: updateUserRole } = useUpdateUserRoleMutation(props.workspaceId);
 
     const [messageLocal, setMessageLocal] = useState("");
     const [newMembership, setNewMembership] = useState<WorkspaceMembershipInviteDto>({ ...defaultWorkspaceInvite, workspaceId: props.workspaceId });
@@ -27,6 +29,10 @@ export default function WorkspaceMembershipPage(props: WorkspaceMembershipPagePr
                 setMessageLocal(`Invitation sent to "${newMembership.email}" successfully!`);
             }
         });
+    }
+
+    const handleRemoveUser = (userId: number) => {
+        removeUser(userId);
     }
 
     return (
@@ -45,10 +51,22 @@ export default function WorkspaceMembershipPage(props: WorkspaceMembershipPagePr
             ) : (
                 <ul className="space-y-4 mb-8 border rounded-lg p-4 bg-gray-50">
                     {memberships?.map(membership => (
-                        <li key={membership.user.id} className="border border-gray-300 rounded-md p-0">
-                            {membership.user.username}
-                            {membership.role}
-                            {membership.joinedAt}
+                        <li key={membership.user.id} className="border border-gray-300 rounded-md p-5">
+                            <span className="text-gray-800 font-semibold">{membership.user.username}</span> <span className="text-gray-600">{membership.role}</span>
+                            <hr className="w-full my-2 border-gray-300" />
+                            {membership.joinedAt ? `Joined at: ${new Date(membership.joinedAt).toLocaleString()}` : "Invitation pending"}<br />
+                            <label htmlFor={`role-${membership.user.id}`} className="block text-sm font-medium text-gray-700 mt-2 mb-1">Update role:</label>
+                            <select
+                                id={`role-${membership.user.id}`}
+                                className="w-full border border-gray-300 rounded-md p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                onChange={(e) => updateUserRole({ userId: membership.user.id, data: { role: e.target.value as WorkspaceMembershipInviteDto['role'] } })}
+                                value={membership.role}
+                            >
+                                <option value="Member">Member</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Owner">Owner</option>
+                            </select>
+                            <button type="button" className="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition hover:cursor-pointer" onClick={() => handleRemoveUser(membership.user.id)}>Remove</button>
                         </li>
                     ))}
                 </ul>

@@ -20,6 +20,7 @@ public class WorkspaceMembershipsController : ControllerBase
     }
 
     [HttpPost("invite")]
+    [Authorize]
     public async Task<ActionResult<WorkspaceMembershipReadDto>> InviteUser(
         [FromBody] WorkspaceMembershipInviteDto dto
     )
@@ -51,6 +52,7 @@ public class WorkspaceMembershipsController : ControllerBase
     }
 
     [HttpDelete("remove")]
+    [Authorize]
     public async Task<ActionResult> RemoveUser([FromQuery] int userId, [FromQuery] int workspaceId)
     {
         await _membershipService.RemoveUserFromWorkspaceAsync(userId, workspaceId);
@@ -58,6 +60,7 @@ public class WorkspaceMembershipsController : ControllerBase
     }
 
     [HttpPut("role")]
+    [Authorize]
     public async Task<ActionResult<WorkspaceMembershipReadDto>> UpdateRole(
         [FromQuery] int userId,
         [FromQuery] int workspaceId,
@@ -73,13 +76,15 @@ public class WorkspaceMembershipsController : ControllerBase
     }
 
     [HttpGet("users")]
-    public async Task<ActionResult<IEnumerable<UserReadDto>>> GetUsers([FromQuery] int workspaceId)
+    [Authorize]
+    public async Task<ActionResult<IEnumerable<WorkspaceMembershipReadDto>>> GetUsers([FromQuery] int workspaceId)
     {
-        var users = await _membershipService.GetUsersInWorkspaceAsync(workspaceId);
-        return Ok(users);
+        var memberships = await _membershipService.GetUsersInWorkspaceAsync(workspaceId);
+        return Ok(memberships);
     }
 
     [HttpGet("workspaces")]
+    [Authorize]
     public async Task<ActionResult<IEnumerable<WorkspaceReadDto>>> GetWorkspaces(
         [FromQuery] int userId
     )
@@ -89,6 +94,7 @@ public class WorkspaceMembershipsController : ControllerBase
     }
 
     [HttpGet("membership")]
+    [Authorize]
     public async Task<ActionResult<WorkspaceMembershipReadDto?>> GetMembership(
         [FromQuery] int userId,
         [FromQuery] int workspaceId
@@ -101,6 +107,7 @@ public class WorkspaceMembershipsController : ControllerBase
     }
 
     [HttpGet("is-in-workspace")]
+    [Authorize]
     public async Task<ActionResult<bool>> IsUserInWorkspace(
         [FromQuery] int userId,
         [FromQuery] int workspaceId
@@ -111,6 +118,7 @@ public class WorkspaceMembershipsController : ControllerBase
     }
 
     [HttpGet("has-role")]
+    [Authorize]
     public async Task<ActionResult<bool>> HasUserRole(
         [FromQuery] int userId,
         [FromQuery] int workspaceId,
@@ -126,6 +134,7 @@ public class WorkspaceMembershipsController : ControllerBase
     }
 
     [HttpGet("role")]
+    [Authorize]
     public async Task<ActionResult<WorkspaceRole>> GetUserRole(
         [FromQuery] int userId,
         [FromQuery] int workspaceId

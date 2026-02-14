@@ -24,6 +24,14 @@ public class WorkspaceService : IWorkspaceService
         return _mapper.Map<IEnumerable<WorkspaceReadDto>>(workspaces);
     }
 
+    public async Task<IEnumerable<WorkspaceReadDto>> GetAllWorkspacesForUserAsync(int userId)
+    {
+        var workspaces = await _context
+            .Workspaces.Where(w => w.WorkspaceMemberships.Any(m => m.UserId == userId))
+            .ToListAsync();
+        return _mapper.Map<IEnumerable<WorkspaceReadDto>>(workspaces);
+    }
+
     public async Task<WorkspaceReadDto?> GetWorkspaceByIdAsync(int id)
     {
         var workspace = await _context.Workspaces.FindAsync(id);
